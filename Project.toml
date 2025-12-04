@@ -1,0 +1,13 @@
+name = "GCATCodes"
+uuid = "604ddfb8-b057-4e57-a88a-fd8ef85a1bc4"
+authors = ["Filip Cavar"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.12"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
