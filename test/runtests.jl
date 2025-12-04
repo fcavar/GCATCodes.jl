@@ -2,5 +2,6 @@ using GCATCodes
 using Test
 
 @testset "GCATCodes.jl" begin
-    # Write your tests here.
+    @test GCATCodes.demo_function("hello") == "HELLO"
+    @test GCATCodes.demo_function("abc") == "ABC"
 end
