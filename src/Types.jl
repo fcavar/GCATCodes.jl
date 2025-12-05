@@ -1,8 +1,10 @@
 using Graphs
 
-export CodonGraphData
+
+# -------------------------------------------------- STRUCTS --------------------------------------------------
 
 
+# struct to hold all data related to a codon graph
 mutable struct CodonGraphData
     codons::Vector{String}
     graph::Graphs.SimpleDiGraph

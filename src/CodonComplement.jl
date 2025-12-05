@@ -9,8 +9,8 @@ function complement(seq::AbstractString)
     end
 end
 
-# println("Anticodon für ", test_codon1, " ist ", complement(test_codon1))
-# println("Anticodon für ", test_codon2, " ist ", complement(test_codon2))
+# @debug "Anticodon für ", test_codon1, " ist ", complement(test_codon1))
+# @debug "Anticodon für ", test_codon2, " ist ", complement(test_codon2))
 
 code_set_true = ["ACG", "CGT",]
 code_set_false = ["ACC", "CGT",]
@@ -18,9 +18,10 @@ code_set_false = ["ACC", "CGT",]
 function is_self_complementary(set::AbstractArray)
     for codon in set
         if complement(codon) in set
-            println("Das Codon ", codon, " hat ein komplementäres Gegenstück in der Menge: ", complement(codon))
+            @debug "Das Codon ", codon, " hat ein komplementäres Gegenstück in der Menge: ", complement(codon)
         else
-            println("Das Codon ", codon, " hat kein komplementäres Gegenstück in der Menge. Es fehlt: ", complement(codon))
+            @debug "Das Codon ", codon, " hat kein komplementäres Gegenstück in der Menge. Es fehlt: ",
+            complement(codon)
             return false
         end
     end
