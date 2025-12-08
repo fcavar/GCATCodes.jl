@@ -1,7 +1,6 @@
 module GCATCodes
 
 # load other source files
-include("CodonComplement.jl")
 include("Types.jl")
 include("AnalysisUtils.jl") # needs Types.jl
 include("PlotUtils.jl") # needs Types.jl
@@ -16,9 +15,7 @@ export
 # export relevant functions
 export
     # AnalysisUtils.jl
-    is_comma_free,
-    # CodonComplement.jl
-    complement_codon,
+    is_circular, is_comma_free, is_self_complementary,
     # GCATCodes.jl
     # GraphUtils.jl
     construct_graph!,
