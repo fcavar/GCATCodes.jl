@@ -1,101 +1,82 @@
 using CairoMakie
+# using GeometryBasics
 using GraphMakie
 using Graphs
+# -------------------------------------------------- VARIABLES --------------------------------------------------
 
+# -------------------------------------------------- CONSTANTS --------------------------------------------------
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
-
-
-# construct graph from scratch
+# construct graph from data
 function construct_graph!(data::CodonGraphData)
     # check if any duplicates in codons
-    if length(data.codons) == length(unique(data.codons)) # no duplicates if true
-        @debug "node_labels: $(data.node_labels)"
-        @debug "length of data.node_labels: $((length(data.node_labels)))"
-        @debug "nv(graph): $(nv(data.graph))"
-        @debug "nv(graph) == length(data.node_labels): $(nv(data.graph) == length(data.node_labels))"
-        @debug "single_bases: $(data.singular_base_nodes)"
-        @debug "tuple_base_nodes: $(data.tuple_base_nodes)"
-        @debug "node_index: $(data.node_index)"
+    if length(data.codon_set) == length(unique(data.codon_set)) # no duplicates if true
+        @debug """Before adding vertices and edges:
+        graph: $(data.graph)
+        codon_set: $(data.codon_set)
+        vertice_labels: $(data.vertice_labels)
+        edge_labels: $(data.edge_labels)
+        """
 
-        create_all_nodes!(data.codons, data.singular_base_nodes, data.tuple_base_nodes)
-        create_graph!(data.graph, data.singular_base_nodes, data.tuple_base_nodes, data.node_labels)
-        # add an index (id) for each node label
-        data.node_index = Dict(label => index for (index, label) in enumerate(data.node_labels))
-        @debug "------------------------------"
-        @debug "node_labels: $(data.node_labels)"
-        @debug "length of data.node_labels: $((length(data.node_labels)))"
-        @debug "nv(graph): $(nv(data.graph))"
-        @debug "nv(graph) == length(data.node_labels): $(nv(data.graph) == length(data.node_labels))"
-        @debug "single_bases: $(data.singular_base_nodes)"
-        @debug "tuple_base_nodes: $(data.tuple_base_nodes)"
-        @debug "node_index: $(data.node_index)"
-        connect_edges!(data.graph, data.codons, data.singular_base_nodes, data.tuple_base_nodes, data.node_index)
+        # extract vertice labels from codon set and add vertices to graph
+        create_all_vertices!(data)
+        # create mapping from vertice label to vertice index in graph
+        data.vertice_index = Dict(label => index for (index, label) in enumerate(data.vertice_labels))
+        # connect edges
+        connect_edges!(data)
 
-        @debug "------------------------------"
-        @debug "node_labels: $(data.node_labels)"
-        @debug "length of data.node_labels: $((length(data.node_labels)))"
-        @debug "nv(graph): $(nv(data.graph))"
-        @debug "nv(graph) == length(data.node_labels): $(nv(data.graph) == length(data.node_labels))"
-        @debug "single_bases: $(data.singular_base_nodes)"
-        @debug "tuple_base_nodes: $(data.tuple_base_nodes)"
-        @debug "node_index: $(data.node_index)"
+        @debug """After adding vertices and edges:
+        graph: $(data.graph)
+        codon_set: $(data.codon_set)
+        vertice_labels: $(data.vertice_labels)
+        edge_labels: $(data.edge_labels)
+        """
     end
-    @debug "Graph constructed from codon set: $(data.codons)"
+    @debug "Graph construction from codon set finished: $(data.codon_set)"
     show_graph(data)
 end
 
 
-# create all needed nodes for the graph by iterating through codons and collect all singular bases and tuple bases
-function create_all_nodes!(codons::Vector{String}, singles::Vector{String}, tuples::Vector{String})
-    for codon in codons
-        # get first character of codon if not already in "singles"
-        if !(string(codon[1]) in singles)
-            push!(singles, string(codon[1]))
-        end
-        # get third character of codon if not already in "singles"
-        if !(string(codon[3]) in singles)
-            push!(singles, string(codon[3]))
-        end
-        # get first tuple of codon if not already in "tuples"
-        if !(codon[1:2] in tuples)
-            push!(tuples, codon[1:2])
-        end
-        # get second tuple of codon if not already in "tuples"
-        if !(codon[2:3] in tuples)
-            push!(tuples, codon[2:3])
-        end
+# create all needed vertices for the graph by iterating through codons and collect all singular and tuple bases
+function create_all_vertices!(data::CodonGraphData)
+    # use a temporary set to avoid duplicates and increase lookup speed
+    temp_labels = Set{String}()
+
+    for codon in data.codon_set
+        # get first and last character of codon
+        println("temp_labels before adding codon $codon: $temp_labels")
+        push!(temp_labels, string(codon[1])) # first base
+        push!(temp_labels, string(codon[3])) # third base
+        # get first two and last two characters of codon
+        push!(temp_labels, codon[1:2]) # first tuple
+        push!(temp_labels, codon[2:3]) # second tuple
+        println("temp_labels after adding codon $codon: $temp_labels")
+    end
+
+    # copy Set to vertice_labels
+    # data.vertice_labels = collect(temp_labels)
+    data.vertice_labels = sort(collect(temp_labels))
+    # add vertices to graph
+    for _ in 1:length(data.vertice_labels)
+        add_vertex!(data.graph)
     end
 end
 
 
-# add all created nodes to the graph and label them
-function create_graph!(graph::Graphs.DiGraph, singles::Array{String}, tuples::Array{String}, node_lables::Array{String})
-    # add all single bases as nodes and label them
-    for base::AbstractString in singles
-        Graphs.SimpleGraphs.add_vertex!(graph)
-        push!(node_lables, base)
-    end
-    # add all tuple bases as nodes and label them
-    for tuple::AbstractString in tuples
-        Graphs.SimpleGraphs.add_vertex!(graph)
-        push!(node_lables, tuple)
-    end
-
-end
-
-
-# connect the nodes in the graph based on the codons
-function connect_edges!(graph::Graphs.DiGraph, codons::Array{String}, singles::Array{String}, tuples::Array{String},
-    node_index::Dict{String,Int})
-    for codon::AbstractString in codons
-        # connect first base to second tuple
-        first_base_id = node_index[string(codon[1])]
-        second_tuple_id = node_index[codon[2:3]]
-        Graphs.SimpleGraphs.add_edge!(graph, first_base_id, second_tuple_id)
-        # connect first tuple to third base
-        first_tuple_id = node_index[codon[1:2]]
-        third_base_id = node_index[string(codon[3])]
-        Graphs.SimpleGraphs.add_edge!(graph, first_tuple_id, third_base_id)
+# connect the vertices in the graph based on the codons by connecting the first base to the second tuple and
+# the first tuple to the third base
+function connect_edges!(data::CodonGraphData)
+    for codon::AbstractString in data.codon_set
+        # get needed vertice IDs
+        first_base_id = data.vertice_index[SubString(codon, 1, 1)]
+        third_base_id = data.vertice_index[SubString(codon, 3, 3)]
+        first_tuple_id = data.vertice_index[SubString(codon, 1, 2)]
+        second_tuple_id = data.vertice_index[SubString(codon, 2, 3)]
+        # first_base_id = data.vertice_index[string(codon[1])]
+        # third_base_id = data.vertice_index[string(codon[3])]
+        # first_tuple_id = data.vertice_index[codon[1:2]]
+        # second_tuple_id = data.vertice_index[codon[2:3]]
+        add_edge!(data.graph, first_base_id, second_tuple_id)
+        add_edge!(data.graph, first_tuple_id, third_base_id)
     end
 end

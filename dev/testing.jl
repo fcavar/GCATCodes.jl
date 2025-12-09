@@ -1,4 +1,4 @@
-using GCATCodes
+isdefined(Main, :GCATCodes) || using GCATCodes
 using CairoMakie
 using GraphMakie
 using Graphs
@@ -11,106 +11,61 @@ global_logger(ConsoleLogger(Logging.Debug)) # activate
 
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
-
-# convert a string of codons separated by spaces into a vector of codon strings
-function string_to_codon_vector(codon_string::String)
-    codon_vector = split(codon_string)
-    return codon_vector
-end
-
-cod = split("AAC GTT AAG CTT AAT ATT ACC GGT ACG CGT ACT AGT AGC GCT AGG CCT CCG CGG TCA TGA")
-@debug "cod: $cod"
-@show cod
-
-function test()
-    data = CodonGraphData(
-        cod,
-        Graphs.SimpleDiGraph(0),
-        String[],
-        String[],
-        String[],
-        Dict{String,Int}(),
-    )
-    construct_graph!(data)
-end
-test()
-
+# create test codon x0 (which is self-complementary, circular and C3)
 codon_x0 = ["AAC", "AAT", "ACC", "ATC", "ATT", "CAG", "CTC", "CTG", "GAA", "GAC", "GAG", "GAT", "GCC", "GGC",
     "GGT", "GTA", "GTC", "GTT", "TAC", "TTC"]
 
+# first data for first graph with codon_x0
 data = CodonGraphData(
-    codon_x0,
-    # ["AAC", "GTT", "AGT", "CGA", "TTC", "GGA", "CTA"],
     Graphs.SimpleDiGraph(0),
-    String[],
-    String[],
-    String[],
+    codon_x0,
+    Vector{String}(),
+    Vector{Tuple{String,String}}(),
     Dict{String,Int}(),
 )
 construct_graph!(data)
 println("Graph is circular: ", is_circular(data))
 
-
-codon_x0_self_complementary = is_self_complementary(data::CodonGraphData)
+# test self complementarity
+codon_x0_self_complementary = create_complement_reversed_codons(data::CodonGraphData)
+codon_x0_self_complementary_sorted = sort(codon_x0_self_complementary)
+println(codon_x0)
+println(codon_x0_self_complementary)
+println(codon_x0_self_complementary_sorted)
+# second data for seconds graph with codon_x0_self_complementary OR codon_x0_self_complementary_sorted
 data_self_complementary = CodonGraphData(
-    codon_x0_self_complementary,
     Graphs.SimpleDiGraph(0),
-    String[],
-    String[],
-    String[],
+    codon_x0_self_complementary,
+    # codon_x0_self_complementary_sorted,
+    Vector{String}(),
+    Vector{Tuple{String,String}}(),
     Dict{String,Int}(),
 )
 construct_graph!(data_self_complementary)
 println("Graph is circular: ", is_circular(data))
 
+is_self_complementary(data)
 
-for i in eachindex(codon_x0)
-    println("Original codon: $(codon_x0[i]) -> reverse complement codon: $(codon_x0_self_complementary[i])")
+counter = 0
+for edge in edges(data.graph)
+    counter += 1
+    println("Edge $counter in graph 1: $(data.vertice_labels[src(edge)]) -> $(data.vertice_labels[dst(edge)])")
+    println("Edge $counter in graph 2: $(data_self_complementary.vertice_labels[src(edge)]) -> $(data_self_complementary.vertice_labels[dst(edge)])")
 end
 
-function is_graphs_identical(g1::Graphs.DiGraph, g2::Graphs.DiGraph)
-    nv(g1) == nv(g2) || return false
-    ne(g1) == ne(g2) || return false
-    for e in edges(g1)
-        has_edge(g2, src(e), dst(e)) || return false
-    end
-    for e in edges(g2)
-        has_edge(g1, src(e), dst(e)) || return false
-    end
 
-    return true
+for edge in edges(data.graph)
+    if has_edge_labeled(data_self_complementary, data.vertice_labels[src(edge)], data.vertice_labels[dst(edge)])
+        println("Edge $(data.vertice_labels[src(edge)]) -> $(data.vertice_labels[dst(edge)]) found in graph 2")
+    else
+        println("Edge $(data.vertice_labels[src(edge)]) -> $(data.vertice_labels[dst(edge)]) NOT found in graph 2")
+    end
 end
 
-is_graphs_identical(data.graph, Graphs.reverse(data_self_complementary.graph))
+println(data.codon_set)
 
 isequal(data.graph, Graphs.reverse(data_self_complementary.graph))
 
-# Example plot to test if everything is working
-labels = ["A", "B"]
-g = Graphs.SimpleDiGraph(2)
-Graphs.SimpleGraphs.add_edge!(g, 1, 2)
-
-function a()
-    fig = Figure(size=(1800, 900))
-    ax = Axis(fig[1, 1])
-    ax.title = "Title"
-    graphplot!(ax, g;
-        nlabels=labels,
-        nlabels_color=:white,
-        nlabels_size=18,
-        nlabels_offset=Point2f(0, 0),
-        nlabels_distance_rel=false,
-        nlabels_align=(:center, :center),
-        node_color=:black,
-        node_size=30,
-        arrow_shift=:end,
-        arrow_size=12,
-        edge_width=2,
-        edge_curvature=0.9
-    )
-    fig
-end
-a()
 
 """
     demo_function(string::String)
@@ -126,3 +81,5 @@ julia> demo_function("hello")
 function demo_function(string::String)
     return uppercase(string)
 end
+
+println("Done.")

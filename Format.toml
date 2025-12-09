@@ -1,12 +1,11 @@
 # line length
-max_width = 92
+max_width = 110
 
 # indent
 indent = 4
 
 # blank line
 format_docstrings = true
-margin = 1
 
 # break funtion parameters when they are too long
 always_for_in = true
