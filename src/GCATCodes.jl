@@ -29,3 +29,19 @@ export
     show_graph
 
 end
+
+
+"""
+    demo_function(string::String)
+
+A demo function that takes a string as input and turns it into all capitals.
+# Example
+```jldoctest
+julia> demo_function("hello")
+"HELLO"
+```
+"""
+
+function demo_function(string::String)
+    return uppercase(string)
+end

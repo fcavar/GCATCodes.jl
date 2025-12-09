@@ -61,25 +61,3 @@ for edge in edges(data.graph)
         println("Edge $(data.vertice_labels[src(edge)]) -> $(data.vertice_labels[dst(edge)]) NOT found in graph 2")
     end
 end
-
-println(data.codon_set)
-
-isequal(data.graph, Graphs.reverse(data_self_complementary.graph))
-
-
-"""
-    demo_function(string::String)
-
-A demo function that takes a string as input and turns it into all capitals.
-# Example
-```jldoctest
-julia> demo_function("hello")
-"HELLO"
-```
-"""
-
-function demo_function(string::String)
-    return uppercase(string)
-end
-
-println("Done.")
