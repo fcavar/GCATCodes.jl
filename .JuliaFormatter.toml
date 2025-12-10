@@ -1,23 +1,23 @@
 # line length
-max_width = 110
+margin = 100
+
 
 # indent
 indent = 4
 
+
 # blank line
 format_docstrings = true
+
 
 # break funtion parameters when they are too long
 always_for_in = true
 join_lines_based_on_source = false
 
+
 # format dicts
-short_to_long = true
 whitespace_typedefs = true
 
-# operator
-normalize_ops = true
-whitespace_ops_in_indices = false
 
 # order for using/import
 align_matrix = false

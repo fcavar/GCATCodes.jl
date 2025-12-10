@@ -16,6 +16,7 @@ export
 # export relevant functions
 export
     # AnalysisUtils.jl
+    is_c3,
     is_circular,
     is_comma_free,
     is_graphs_identical,

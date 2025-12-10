@@ -7,7 +7,7 @@ using Graphs
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
 # construct graph from data
-function construct_graph!(data::CodonGraphData; show_plot::Bool=false, show_debug::Bool=false)
+function construct_graph!(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false)
     # check if any duplicates in codons
     if length(data.codon_set) == length(unique(data.codon_set)) # no duplicates if true
         show_debug && @debug """
@@ -21,7 +21,8 @@ function construct_graph!(data::CodonGraphData; show_plot::Bool=false, show_debu
         # extract vertice labels from codon set and add vertices to graph
         create_all_vertices!(data)
         # create mapping from vertice label to vertice index in graph
-        data.vertice_index = Dict(label => index for (index, label) in enumerate(data.vertice_labels))
+        data.vertice_index =
+            Dict(label => index for (index, label) in enumerate(data.vertice_labels))
         # connect edges
         connect_edges!(data)
 
@@ -35,13 +36,13 @@ function construct_graph!(data::CodonGraphData; show_plot::Bool=false, show_debu
     end
     show_debug && @debug "Graph construction from codon set finished: $(data.codon_set)"
     if show_plot
-        show_graph(data, show_debug=show_debug)
+        show_graph(data, show_debug = show_debug)
     end
 end
 
 
 # create all needed vertices for the graph by iterating through codons and collect all singular and tuple bases
-function create_all_vertices!(data::CodonGraphData; show_debug::Bool=false)
+function create_all_vertices!(data::CodonGraphData; show_debug::Bool = false)
     # use a temporary set to avoid duplicates and increase lookup speed
     temp_labels = Set{String}()
 
@@ -65,7 +66,7 @@ end
 
 # connect the vertices in the graph based on the codons by connecting the first base to the second tuple and
 # the first tuple to the third base
-function connect_edges!(data::CodonGraphData; show_debug::Bool=false)
+function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
     for codon::AbstractString in data.codon_set
         # get needed vertice IDs
         first_base_id = data.vertice_index[SubString(codon, 1, 1)]
