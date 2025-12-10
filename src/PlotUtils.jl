@@ -6,12 +6,12 @@ using GraphMakie
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
 # creates a plot representing the codon set data
-function show_graph(data::CodonGraphData)
-    @debug "Showing graph..."
+function show_graph(data::CodonGraphData; show_debug::Bool=false)
+    show_debug && @debug "Showing graph..."
     fig = Figure(size=(1800, 900))
     ax = Axis(fig[1, 1])
     ax.title = "Graph for codon set: $(data.codon_set)"
-    @debug "vertice_labels in graph: $(data.vertice_labels)"
+    show_debug && @debug "vertice_labels in graph: $(data.vertice_labels)"
     graphplot!(ax, data.graph;
         nlabels=data.vertice_labels,
         nlabels_color=:white,
