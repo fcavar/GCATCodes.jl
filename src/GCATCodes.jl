@@ -28,8 +28,6 @@ export
     # PlotUtils.jl
     show_graph
 
-end
-
 
 """
     demo_function(string::String)
@@ -44,4 +42,6 @@ julia> demo_function("hello")
 
 function demo_function(string::String)
     return uppercase(string)
+end
+
 end
