@@ -25,5 +25,5 @@ function show_graph(data::CodonGraphData)
         edge_width=2,
         edge_curvature=0.9
     )
-    fig
+    display(fig)
 end

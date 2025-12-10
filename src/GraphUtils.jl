@@ -8,7 +8,7 @@ using Graphs
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
 # construct graph from data
-function construct_graph!(data::CodonGraphData)
+function construct_graph!(data::CodonGraphData; show_plot::Bool=true)
     # check if any duplicates in codons
     if length(data.codon_set) == length(unique(data.codon_set)) # no duplicates if true
         @debug """Before adding vertices and edges:
@@ -33,7 +33,9 @@ function construct_graph!(data::CodonGraphData)
         """
     end
     @debug "Graph construction from codon set finished: $(data.codon_set)"
-    show_graph(data)
+    if show_plot
+        show_graph(data)
+    end
 end
 
 
@@ -44,13 +46,11 @@ function create_all_vertices!(data::CodonGraphData)
 
     for codon in data.codon_set
         # get first and last character of codon
-        println("temp_labels before adding codon $codon: $temp_labels")
         push!(temp_labels, string(codon[1])) # first base
         push!(temp_labels, string(codon[3])) # third base
         # get first two and last two characters of codon
         push!(temp_labels, codon[1:2]) # first tuple
         push!(temp_labels, codon[2:3]) # second tuple
-        println("temp_labels after adding codon $codon: $temp_labels")
     end
 
     # copy Set to vertice_labels

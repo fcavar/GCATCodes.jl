@@ -39,7 +39,7 @@ end
 
 # returns the complement base
 function complement_base(base::Char)
-    @assert base in keys(BASE_COMPLEMENT)
+    @assert haskey(BASE_COMPLEMENT, base)
     "Base is invalid. Only A, C, G, T are allowed."
     @debug "Original base: $base, -> complement base: $(BASE_COMPLEMENT[base])"
     return BASE_COMPLEMENT[base]
@@ -48,7 +48,7 @@ end
 
 # returns the complement codon
 function complement_codon(codon::AbstractString)
-    @assert all(c in keys(BASE_COMPLEMENT) for c in codon)
+    @assert all(haskey(BASE_COMPLEMENT, c) for c in codon)
     "Codon contains invalid characters. Only A, C, G, T are allowed."
 
     if length(codon) == 3
@@ -60,7 +60,7 @@ end
 
 # returns the reversed codon
 function reverse_codon(codon::AbstractString)
-    @assert all(c in keys(BASE_COMPLEMENT) for c in codon)
+    @assert all(haskey(BASE_COMPLEMENT, c) for c in codon)
     "Codon contains invalid characters. Only A, C, G, T are allowed."
 
     if length(codon) == 3

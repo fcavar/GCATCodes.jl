@@ -73,7 +73,7 @@ end
 
 
 # check if a set of codons is self-complementary by checking if the graph G(X) is equal to its inverted Graph
-function is_self_complementary(data::CodonGraphData)
+function is_self_complementary(data::CodonGraphData; show_plot::Bool=true)
     # create complement reversed codons
     complement_reversed_codon_set = create_complement_reversed_codons(data)
     # create new graph with complement_reversed_codon_set to compare with original graph
@@ -84,7 +84,7 @@ function is_self_complementary(data::CodonGraphData)
         Vector{Tuple{String,String}}(),
         Dict{String,Int}(),
     )
-    construct_graph!(data_self_complementary)
+    construct_graph!(data_self_complementary, show_plot=show_plot)
     return is_graphs_identical(data, data_self_complementary)
 end
 
