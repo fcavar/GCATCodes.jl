@@ -17,11 +17,13 @@ function is_circular(data::CodonGraphData; show_debug::Bool = false)
     for vertice in vertices(data.graph)
         if state_array[vertice] == 0
             if dfs_cycle_detection(data, vertice, state_array, show_debug = show_debug)
+                println("Cycle detected in graph -> Graph is not acyclic aka. not circular")
                 return false # no cycles detected, Graph is acyclic aka. circular
             end
         end
     end
 
+    println("No cycles detected in graph -> Graph is acyclic aka. circular")
     return true # no cycles detected, Graph is not acyclic aka. not circular
 end
 
@@ -43,9 +45,9 @@ function dfs_cycle_detection(
             end
         end
     end
+
     # mark the current vertice as visited
     state_array[vertice] = 2
-
     return false # no cycle detected from this path
 end
 
@@ -54,10 +56,12 @@ end
 function is_comma_free(data::CodonGraphData; show_debug::Bool = false)
     for vertice in vertices(data.graph)
         if dfs_depth_limited(data.graph, vertice, 0, show_debug = show_debug)
+            println("Path longer than 2 found in graph -> codon set is not comma-free")
             return false # path longer than 2 found
         end
     end
 
+    println("No paths longer than 2 found in graph -> codon set is comma-free")
     return true # no paths longer than 2 found
 end
 
@@ -90,18 +94,34 @@ function is_self_complementary(
     show_debug::Bool = false,
 )
     # create complement reversed codons
-    complement_reversed_codon_set = create_complement_reversed_codons(data, show_debug = show_debug)
+    codon_set_complemented_reversed =
+        create_complement_reversed_codons(data, show_debug = show_debug)
     # create new graph with complement_reversed_codon_set to compare with original graph
-    data_self_complementary = CodonGraphData(
+    data_complemented_reversed = CodonGraphData(
         Graphs.SimpleDiGraph(0),
-        complement_reversed_codon_set,
+        codon_set_complemented_reversed,
         Vector{String}(),
         Vector{Tuple{String, String}}(),
         Dict{String, Int}(),
     )
-    construct_graph!(data_self_complementary, show_plot = show_plot, show_debug = show_debug)
-
-    return is_graphs_identical(data, data_self_complementary, show_debug = show_debug)
+    construct_graph!(data_complemented_reversed, show_plot = show_plot, show_debug = show_debug)
+    if is_graphs_identical(data, data_complemented_reversed, show_debug = show_debug)
+        println("""Original codon set:
+        $(data.codon_set)
+        Complemented, reversed codon set:
+        $(data_complemented_reversed.codon_set)
+        Graphs are identical -> original codon set is self-complementary
+        """)
+        return true
+    else
+        println("""Original codon set:
+        $(data.codon_set)
+        Complemented, reversed codon set:
+        $(data_complemented_reversed.codon_set)
+        Graphs are not identical -> original codon set is not self-complementary
+        """)
+        return false
+    end
 end
 
 
@@ -156,12 +176,12 @@ function is_graphs_identical(
                 @debug "Edge: $(data_first.vertice_labels[src(edge)]) -> $(data_first.vertice_labels[dst(edge)]) also in Graph 2"
         else
             show_debug &&
-                @debug "Edge: $(data_first.vertice_labels[src(edge)]) -> $(data_first.vertice_labels[dst(edge)]) NOT in Graph 2-------------------------------------"
-            return false
+                @debug "Edge: $(data_first.vertice_labels[src(edge)]) -> $(data_first.vertice_labels[dst(edge)]) NOT in Graph 2"
+            return false # edge not found
         end
     end
 
-    return "Graphs are identical -> self-complementary is true"
+    return true # graphs are identical
 end
 
 
@@ -176,10 +196,10 @@ function has_edge_label(
     haskey(data.vertice_index, src_label) || return false
     haskey(data.vertice_index, dst_label) || return false
 
-    start_id = data.vertice_index[src_label]
-    end_id = data.vertice_index[dst_label]
+    from_index = data.vertice_index[src_label]
+    to_index = data.vertice_index[dst_label]
 
-    return has_edge(data.graph, start_id, end_id)
+    return has_edge(data.graph, from_index, to_index)
 end
 
 
@@ -190,19 +210,32 @@ end
 
 
 # check if a set of codons is C3 by checking if the two shifted graphs α₁(X) and α₂ are circular
-function is_c3(data::CodonGraphData; show_debug::Bool = false)
+function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false)
     # create shifted graph
-    shifted_graph_by_1 = create_shifted_graph(data, 1, show_debug = show_debug)
-    shifted_graph_by_2 = create_shifted_graph(data, 2, show_debug = show_debug)
+    shifted_graph_by_1 =
+        create_shifted_graph(data, 1, show_plot = show_plot, show_debug = show_debug)
+    shifted_graph_by_2 =
+        create_shifted_graph(data, 2, show_plot = show_plot, show_debug = show_debug)
 
     # check if both shifted graphs are circular
-    return is_circular(shifted_graph_by_1, show_debug = show_debug) &&
-           is_circular(shifted_graph_by_2, show_debug = show_debug)
+    if is_circular(shifted_graph_by_1, show_debug = show_debug) &&
+       is_circular(shifted_graph_by_2, show_debug = show_debug)
+        println("Shifted graphs α₁(X) and α₂ are circular -> codon set is C3")
+        return true
+    else
+        println("One or both of the shifted graphs α₁ or α₂ is not circular -> codon set is not C3")
+        return false
+    end
 end
 
 
 # create shifted graph αₖ(X) from original graph by shifting codons by k positions
-function create_shifted_graph(data::CodonGraphData, shift_by::Int; show_debug::Bool = false)
+function create_shifted_graph(
+    data::CodonGraphData,
+    shift_by::Int;
+    show_plot::Bool = false,
+    show_debug::Bool = false,
+)
     # create shifted codon set
     shifted_codon_set = Vector{String}()
     for codon in data.codon_set
@@ -218,7 +251,7 @@ function create_shifted_graph(data::CodonGraphData, shift_by::Int; show_debug::B
         Vector{Tuple{String, String}}(),
         Dict{String, Int}(),
     )
-    construct_graph!(shifted_data, show_plot = true, show_debug = show_debug)
+    construct_graph!(shifted_data, show_plot = show_plot, show_debug = show_debug)
 
     return shifted_data
 end
@@ -236,4 +269,66 @@ function left_shift_codon(codon::String, shift_by::Int; show_debug::Bool = false
     """
 
     return shifted_codon
+end
+
+
+# function to display all cycles in the graph
+function display_cycles(data::CodonGraphData; show_debug::Bool = false)
+    cycles = Graphs.simple_cycles(data.graph)
+    show_debug && @debug "Cycles in the graph:"
+    for cycle in cycles
+        cycle_labels = [data.vertice_labels[v] for v in cycle]
+        show_debug && @debug join(cycle_labels, " -> ") * " -> " * cycle_labels[1]
+    end
+end
+
+
+# function to add a new vertice to a graph data structure
+function add_vertice_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false)
+    if label in data.vertice_labels # vertice already exists
+        show_debug && @debug "Vertice $label already exists in graph -> not added."
+        return false
+    else # vertice does not already exist
+        # update affected data fields
+        add_vertex!(data.graph) # add vertice to graph
+        push!(data.vertice_labels, label) # add vertice label
+        data.vertice_index[label] = nv(data.graph) # map label to vertice index
+        show_debug && @debug "Added vertice: $label"
+
+        return true
+    end
+end
+
+
+# function to add a new edge to a graph data structure
+function add_edge_by_label!(
+    data::CodonGraphData,
+    from_label::String,
+    to_label::String;
+    show_debug::Bool = false,
+)
+    if has_edge_label(data, from_label, to_label, show_debug = show_debug) # edge already exists
+        show_debug && @debug "Edge $from_label -> $to_label already exists in graph -> not added."
+
+        return false
+    else # edge does not already exist
+        connect_edge_by_label!(data, from_label, to_label, show_debug = show_debug)
+        push!(data.edge_labels, (from_label, to_label))
+        show_debug && @debug "Added edge: $from_label -> $to_label"
+
+        return true
+    end
+end
+
+# connect one edge label to another
+function connect_edge_by_label!(
+    data::CodonGraphData,
+    from_label::String,
+    to_label::String;
+    show_debug::Bool = false,
+)
+    # get needed vertice IDs
+    from_index = data.vertice_index[from_label]
+    to_index = data.vertice_index[to_label]
+    add_edge!(data.graph, from_index, to_index)
 end

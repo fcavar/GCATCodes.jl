@@ -16,6 +16,11 @@ export
 # export relevant functions
 export
     # AnalysisUtils.jl
+    add_vertice_by_label!,
+    add_edge_by_label!,
+    connect_edge_by_label!,
+    display_cycles,
+    has_edge_label,
     is_c3,
     is_circular,
     is_comma_free,

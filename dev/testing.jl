@@ -40,17 +40,39 @@ example_codon_set = ["CGT", "GTA", "ACT", "AAT"]
 # first data for first graph with codon_x0
 data = CodonGraphData(
     Graphs.SimpleDiGraph(0),
-    codon_x0,
-    # example_codon_set,
+    # codon_x0,
+    example_codon_set,
     Vector{String}(),
     Vector{Tuple{String, String}}(),
     Dict{String, Int}(),
 )
 construct_graph!(data; show_plot = true, show_debug = false)
-println("Graph is circular: ", is_circular(data))
-println("Graph is comma-free: ", is_comma_free(data))
-println("Graph is self-complementary: ", is_self_complementary(data, show_plot = false))
-println("Graph is C3: ", is_c3(data))
+is_circular(data, show_debug = false)
+is_comma_free(data, show_debug = false)
+is_self_complementary(data, show_plot = false, show_debug = false)
+is_c3(data, show_plot = false, show_debug = false)
+# "Displaying cycles in graph:", display_cycles(data)
+add_vertice_by_label!(data, "C", show_debug = true)
+add_vertice_by_label!(data, "TA", show_debug = true)
+add_edge_by_label!(data, "T", "AC", show_debug = true)
+show_graph(data, show_debug = false)
+add_edge_by_label!(data, "AT", "A", show_debug = true)
+show_graph(data, show_debug = false)
+add_edge_by_label!(data, "A", "TA", show_debug = true)
+show_graph(data, show_debug = false)
+add_edge_by_label!(data, "TA", "C", show_debug = true)
+show_graph(data, show_debug = false)
+is_circular(data, show_debug = false)
+is_comma_free(data, show_debug = false)
+is_self_complementary(data, show_plot = false, show_debug = false)
+is_c3(data, show_plot = false, show_debug = false)
+
+
+
+
+
+
+
 
 # test self complementarity
 codon_x0_self_complementary = create_complement_reversed_codons(data::CodonGraphData)
@@ -111,18 +133,16 @@ open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
             Vector{Tuple{String, String}}(),
             Dict{String, Int}(),
         )
-        construct_graph!(test_data)
-        # println(is_self_complementary(test_data))
-        if i == 1000
+        println("""Testing codon set #$i:
+        $(test_data.codon_set)
+        """)
+        construct_graph!(test_data, show_plot = false, show_debug = false)
+        is_circular(test_data, show_debug = false)
+        is_comma_free(test_data, show_debug = false)
+        is_self_complementary(test_data, show_plot = false, show_debug = false)
+        is_c3(test_data, show_plot = false, show_debug = false)
+        if i == 1
             break
         end
     end
 end
-
-v = ["AAC", "AAT"]
-function leftshift(s, k = 1)
-    k = k % length(s)
-    s[k+1:end] * s[1:k]
-end
-v_shift1 = leftshift.(v)        # um 1 nach links: ["ACA", "ATA"]
-v_shift2 = leftshift.(v, 2)     # um 2 nach links: ["CAA", "TAA"]
