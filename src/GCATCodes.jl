@@ -27,12 +27,14 @@ export
     is_graphs_identical,
     is_self_complementary,
     # CodonUtils.jl
-    create_complement_reversed_codons,
+    get_complement_reversed_codons,
+    get_reverse_codon_set,
     # GCATCodes.jl
     # GraphUtils.jl
     construct_graph!,
     # PlotUtils.jl
-    show_graph
+    show_graph,
+    show_multiple_graphs
 
 
 """

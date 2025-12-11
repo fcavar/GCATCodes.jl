@@ -39,14 +39,17 @@ codon_x0 = [
 example_codon_set = ["CGT", "GTA", "ACT", "AAT"]
 # first data for first graph with codon_x0
 data = CodonGraphData(
-    Graphs.SimpleDiGraph(0),
-    # codon_x0,
-    example_codon_set,
-    Vector{String}(),
-    Vector{Tuple{String, String}}(),
-    Dict{String, Int}(),
+    Graphs.SimpleDiGraph(0), # graph
+    codon_x0, # codon_set
+    # example_codon_set, # codon_set
+    Vector{String}(), # vertice_labels
+    Vector{String}(), # added_vertice_labels
+    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
 )
 construct_graph!(data; show_plot = true, show_debug = false)
+show_graph(data; show_debug = false)
 # check properties of graph
 is_circular(data, show_debug = false)
 is_comma_free(data, show_debug = false)
@@ -57,12 +60,13 @@ is_c3(data, show_plot = false, show_debug = false)
 
 # manually add vertices and edges to data_adjusted
 data_adjusted = CodonGraphData(
-    Graphs.SimpleDiGraph(0),
-    # codon_x0,
-    example_codon_set,
-    Vector{String}(),
-    Vector{Tuple{String, String}}(),
-    Dict{String, Int}(),
+    Graphs.SimpleDiGraph(0), # graph
+    example_codon_set, # codon_set
+    Vector{String}(), # vertice_labels
+    Vector{String}(), # added_vertice_labels
+    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
 )
 construct_graph!(data_adjusted; show_plot = true, show_debug = false)
 
@@ -83,6 +87,7 @@ is_circular(data_adjusted, show_debug = false)
 is_comma_free(data_adjusted, show_debug = false)
 is_self_complementary(data_adjusted, show_plot = false, show_debug = false)
 is_c3(data_adjusted, show_plot = false, show_debug = false)
+
 
 
 
@@ -119,12 +124,13 @@ println(codon_x0_self_complementary)
 println(codon_x0_self_complementary_sorted)
 # second data for seconds graph with codon_x0_self_complementary OR codon_x0_self_complementary_sorted
 data_self_complementary = CodonGraphData(
-    Graphs.SimpleDiGraph(0),
-    codon_x0_self_complementary,
-    # codon_x0_self_complementary_sorted,
-    Vector{String}(),
-    Vector{Tuple{String, String}}(),
-    Dict{String, Int}(),
+    Graphs.SimpleDiGraph(0), # graph
+    codon_x0_self_complementary, # codon_set
+    Vector{String}(), # vertice_labels
+    Vector{String}(), # added_vertice_labels
+    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
 )
 construct_graph!(data_self_complementary)
 println("Graph is circular: ", is_circular(data))
@@ -186,13 +192,33 @@ end
 
 
 # example for cycle detection
-example_codon_set = ["CGT", "GTA", "ACT", "AAT", "ATT", "TTA", "TTC"]
+example_codon_set2 = ["CGT", "GTA", "ACT", "AAT", "ATT", "TTA", "TTC"]
 example_data = CodonGraphData(
-    Graphs.SimpleDiGraph(0),
-    example_codon_set,
-    Vector{String}(),
-    Vector{Tuple{String, String}}(),
-    Dict{String, Int}(),
+    Graphs.SimpleDiGraph(0), # graph
+    example_codon_set, # codon_set
+    Vector{String}(), # vertice_labels
+    Vector{String}(), # added_vertice_labels
+    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
 )
 construct_graph!(example_data; show_plot = true, show_debug = false)
+show_graph(example_data; show_debug = false)
 display_cycles(example_data; show_debug = true)
+
+reverse_data = CodonGraphData(
+    Graphs.SimpleDiGraph(0), # graph
+    get_reverse_codon_set(example_codon_set), # codon_set
+    Vector{String}(), # vertice_labels
+    Vector{String}(), # added_vertice_labels
+    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
+)
+construct_graph!(reverse_data; show_plot = true, show_debug = false)
+
+println(example_data.vertice_labels)
+println(reverse_data.vertice_labels)
+
+data_list = [example_data, reverse_data, example_data, data, data_adjusted]
+show_multiple_graphs(data_list; show_debug = true)

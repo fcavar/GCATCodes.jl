@@ -36,7 +36,7 @@ function construct_graph!(data::CodonGraphData; show_plot::Bool = false, show_de
     end
     show_debug && @debug "Graph construction from codon set finished: $(data.codon_set)"
     if show_plot
-        show_graph(data, show_debug = show_debug)
+        show_graph(data; show_debug = show_debug)
     end
 end
 
@@ -55,8 +55,8 @@ function create_all_vertices!(data::CodonGraphData; show_debug::Bool = false)
         push!(temp_labels, codon[2:3]) # second tuple
     end
 
-    # copy Set to vertice_labels
-    data.vertice_labels = sort(collect(temp_labels))
+    # copy set to vertice_labels
+    data.vertice_labels = sort(collect(temp_labels), by = x -> (length(x), x))
     # add vertices to graph
     for _ in 1:length(data.vertice_labels)
         add_vertex!(data.graph)
