@@ -46,6 +46,7 @@ function create_all_vertices!(data::CodonGraphData; show_debug::Bool = false)
     # use a temporary set to avoid duplicates and increase lookup speed
     temp_labels = Set{String}()
 
+    # iterate through codon set and extract needed vertice labels
     for codon in data.codon_set
         # get first and last character of codon
         push!(temp_labels, string(codon[1])) # first base
@@ -54,6 +55,11 @@ function create_all_vertices!(data::CodonGraphData; show_debug::Bool = false)
         push!(temp_labels, codon[1:2]) # first tuple
         push!(temp_labels, codon[2:3]) # second tuple
     end
+
+    # # add manually added vertice labels
+    # for label in data.added_vertice_labels
+    #     push!(temp_labels, label)
+    # end
 
     # copy set to vertice_labels
     data.vertice_labels = sort(collect(temp_labels), by = x -> (length(x), x))
@@ -67,13 +73,30 @@ end
 # connect the vertices in the graph based on the codons by connecting the first base to the second tuple and
 # the first tuple to the third base
 function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
-    for codon::AbstractString in data.codon_set
+    graph = data.graph
+    vertice_index = data.vertice_index
+    vertice_labels = data.vertice_labels
+    edge_labels = data.edge_labels
+
+    # iterate through codon set and add edges to graph
+    for codon in data.codon_set
         # get needed vertice IDs
-        first_base_id = data.vertice_index[SubString(codon, 1, 1)]
-        third_base_id = data.vertice_index[SubString(codon, 3, 3)]
-        first_tuple_id = data.vertice_index[SubString(codon, 1, 2)]
-        second_tuple_id = data.vertice_index[SubString(codon, 2, 3)]
-        add_edge!(data.graph, first_base_id, second_tuple_id)
-        add_edge!(data.graph, first_tuple_id, third_base_id)
+        first_base_id = vertice_index[SubString(codon, 1, 1)]
+        third_base_id = vertice_index[SubString(codon, 3, 3)]
+        first_tuple_id = vertice_index[SubString(codon, 1, 2)]
+        second_tuple_id = vertice_index[SubString(codon, 2, 3)]
+
+        # add edges to graph
+        add_edge!(graph, first_base_id, second_tuple_id)
+        add_edge!(graph, first_tuple_id, third_base_id)
+
+        # update edge_labels field
+        push!(edge_labels, (vertice_labels[first_base_id], vertice_labels[second_tuple_id]))
+        push!(edge_labels, (vertice_labels[first_tuple_id], vertice_labels[third_base_id]))
     end
+
+    # # add manually added edge labels
+    # for edge_label in data.added_edge_labels
+    #     add_edge!(graph, vertice_index[edge_label[1]], vertice_index[edge_label[2]])
+    # end
 end

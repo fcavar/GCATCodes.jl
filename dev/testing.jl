@@ -36,7 +36,6 @@ codon_x0 = [
     "TAC",
     "TTC",
 ]
-example_codon_set = ["CGT", "GTA", "ACT", "AAT"]
 # first data for first graph with codon_x0
 data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
@@ -191,8 +190,9 @@ open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
 end
 
 
+# example from PDF
+example_codon_set = ["CGT", "GTA", "ACT", "AAT"]
 # example for cycle detection
-example_codon_set2 = ["CGT", "GTA", "ACT", "AAT", "ATT", "TTA", "TTC"]
 example_data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     example_codon_set, # codon_set
@@ -202,9 +202,6 @@ example_data = CodonGraphData(
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
-construct_graph!(example_data; show_plot = true, show_debug = false)
-show_graph(example_data; show_debug = false)
-display_cycles(example_data; show_debug = true)
 
 reverse_data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
@@ -215,10 +212,99 @@ reverse_data = CodonGraphData(
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
+
+alpha_1_data = CodonGraphData(
+    Graphs.SimpleDiGraph(0), # graph
+    left_shift_codon_set(example_codon_set, 1; show_debug = false), # codon_set
+    Vector{String}(), # vertice_labels
+    Vector{String}(), # added_vertice_labels
+    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
+)
+
+alpha_2_data = CodonGraphData(
+    Graphs.SimpleDiGraph(0), # graph
+    left_shift_codon_set(example_codon_set, 2; show_debug = false), # codon_set
+    Vector{String}(), # vertice_labels
+    Vector{String}(), # added_vertice_labels
+    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
+)
+
+manually_adjusted_data = CodonGraphData(
+    Graphs.SimpleDiGraph(0), # graph
+    example_codon_set, # codon_set
+    Vector{String}(), # vertice_labels
+    Vector{String}(), # added_vertice_labels
+    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
+)
+
+construct_graph!(example_data; show_plot = true, show_debug = false)
 construct_graph!(reverse_data; show_plot = true, show_debug = false)
+construct_graph!(alpha_1_data; show_plot = true, show_debug = false)
+construct_graph!(alpha_2_data; show_plot = true, show_debug = false)
+construct_graph!(manually_adjusted_data; show_plot = true, show_debug = false)
 
-println(example_data.vertice_labels)
-println(reverse_data.vertice_labels)
+# get N₂ and N₃N₁ for each codon and add them as vertices and edges between them
+for codon in manually_adjusted_data.codon_set
+    n2 = codon[2:2]
+    n3n1 = string(codon[3], codon[1])
+    println("n2: $n2, n3n1: $n3n1")
+    add_vertice_by_label!(manually_adjusted_data, n2, show_debug = true)
+    add_vertice_by_label!(manually_adjusted_data, n3n1, show_debug = true)
+    add_edge_by_label!(manually_adjusted_data, n2, n3n1, show_debug = true)
+    add_edge_by_label!(manually_adjusted_data, n3n1, n2, show_debug = true)
+end
+show_graph(manually_adjusted_data; show_debug = false)
 
-data_list = [example_data, reverse_data, example_data, data, data_adjusted]
+println(vcat(example_data.vertice_labels, example_data.added_vertice_labels))
+println(vcat(reverse_data.vertice_labels, reverse_data.added_vertice_labels))
+println(vcat(alpha_1_data.vertice_labels, alpha_1_data.added_vertice_labels))
+println(vcat(alpha_2_data.vertice_labels, alpha_2_data.added_vertice_labels))
+println(vcat(manually_adjusted_data.vertice_labels, manually_adjusted_data.added_vertice_labels))
+
+data_list = [example_data, reverse_data, alpha_1_data, alpha_2_data, manually_adjusted_data]
+names = ["example_data", "reverse_data", "alpha_1_data", "alpha_2_data", "manually_adjusted_data"]
 show_multiple_graphs(data_list; show_debug = true)
+
+for edge in example_data.edge_labels
+    println("Edge in example_data: $(edge[1]) -> $(edge[2])")
+end
+for edge in reverse_data.edge_labels
+    println("Edge in reverse_data: $(edge[1]) -> $(edge[2])")
+end
+for edge in alpha_1_data.edge_labels
+    println("Edge in alpha_1_data: $(edge[1]) -> $(edge[2])")
+end
+for edge in alpha_2_data.edge_labels
+    println("Edge in alpha_2_data: $(edge[1]) -> $(edge[2])")
+end
+
+
+for i in 1:(length(data_list) - 1), j in (i + 1):length(data_list)
+    common_edges = intersect(data_list[i].edge_labels, data_list[j].edge_labels)
+    println("""$(names[i]) compared to $(names[j])
+    -> amount of common edges: $(length(common_edges))""")
+    if length(common_edges) > 0
+        println("list of common edges: $common_edges")
+        counter = 1
+        for edge in common_edges
+            println("Common edge $counter: $(edge[1]) -> $(edge[2])")
+            counter += 1
+        end
+    end
+end
+
+
+for name in fieldnames(typeof(manually_adjusted_data))
+    println("$name => $(getfield(example_data, name))\n")
+end
+
+#vertice_labels => ["A", "C", "G", "T", "AA", "AC", "AT", "CG", "CT", "GT", "TA"]
+#vertice_labels => ["A", "C", "G", "T", "AA", "AC", "AT", "CG", "CT", "GT", "TA"]
+#edge_labels => [("C", "GT"), ("CG", "T"), ("G", "TA"), ("GT", "A"), ("A", "CT"), ("AC", "T"), ("A", "AT"), ("AA", "T")]
+#edge_labels => [("C", "GT"), ("CG", "T"), ("G", "TA"), ("GT", "A"), ("A", "CT"), ("AC", "T"), ("A", "AT"), ("AA", "T")]

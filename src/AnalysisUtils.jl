@@ -254,8 +254,24 @@ function create_shifted_graph(
         Dict{String, Int}(), # vertice_index
     )
     construct_graph!(shifted_data; show_plot = show_plot, show_debug = show_debug)
-
     return shifted_data
+end
+
+
+# shift a codon set by k positions to the left
+function left_shift_codon_set(codon_set::Vector{String}, shift_by::Int; show_debug::Bool = false)
+    # limit shift_by to length of codon
+    shift_by = mod(shift_by, length(codon_set[1]))
+    # shift every codon from codon_set
+    shifted_codon_set = Vector{String}()
+    for codon in codon_set
+        # cut of first shift_by characters and append them to the end
+        shifted_codon = left_shift_codon(codon, shift_by; show_debug = show_debug)
+        push!(shifted_codon_set, shifted_codon)
+    end
+    show_debug && @debug """Original codon set: $codon_set
+    -> shifted codon set by $shift_by: $shifted_codon_set"""
+    return shifted_codon_set
 end
 
 
@@ -265,21 +281,9 @@ function left_shift_codon(codon::String, shift_by::Int; show_debug::Bool = false
     shift_by = mod(shift_by, length(codon))
     # cut of first shift_by characters and append them to the end
     shifted_codon = codon[(shift_by + 1):end] * codon[1:shift_by]
-    show_debug && @debug """Original codon set: $codon
-    -> shifted codon set by $shift_by: $shifted_codon"""
-
+    show_debug && @debug """Original codon: $codon
+    -> shifted codon by $shift_by: $shifted_codon"""
     return shifted_codon
-end
-
-
-# function to display all cycles in the graph
-function display_cycles(data::CodonGraphData; show_debug::Bool = false)
-    cycles = Graphs.simple_cycles(data.graph)
-    show_debug && @debug "Cycles in the graph:"
-    for cycle in cycles
-        cycle_labels = [data.vertice_labels[v] for v in cycle]
-        show_debug && @debug join(cycle_labels, " -> ") * " -> " * cycle_labels[1]
-    end
 end
 
 

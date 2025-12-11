@@ -11,7 +11,16 @@ function show_graph(data::CodonGraphData; show_debug::Bool = false)
     show_debug && @debug "Showing graph..."
     # create plot figure
     fig = Figure(size = (1800, 900))
-    ax = Axis(fig[1, 1])
+    ax = Axis(
+        fig[1, 1];
+        xgridvisible = false,
+        ygridvisible = false,
+        xticksvisible = false,
+        yticksvisible = false,
+        xticklabelsvisible = false,
+        yticklabelsvisible = false,
+    )
+    hidespines!(ax) # remove axis spines
     ax.title = "Graph for codon set: $(data.codon_set)"
     # combine vertice labels with manually added vertice labels
     combine_vertice_labels = vcat(data.vertice_labels, data.added_vertice_labels)
@@ -49,7 +58,15 @@ function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Boo
         row = fld(index - 1, number_columns) + 1
         column = mod(index - 1, number_columns) + 1
         show_debug && @debug "index: $index, row: $row, column: $column"
-        ax = Axis(fig[row, column])
+        ax = Axis(
+            fig[row, column];
+            xgridvisible = false,
+            ygridvisible = false,
+            xticksvisible = false,
+            yticksvisible = false,
+            xticklabelsvisible = false,
+            yticklabelsvisible = false,
+        )
         ax.title = "Graph for codon set: $(data.codon_set)"
         # combine vertice labels with manually added vertice labels
         combine_vertice_labels = vcat(data.vertice_labels, data.added_vertice_labels)

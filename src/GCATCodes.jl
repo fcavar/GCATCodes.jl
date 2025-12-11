@@ -26,6 +26,8 @@ export
     is_comma_free,
     is_graphs_identical,
     is_self_complementary,
+    left_shift_codon_set,
+    left_shift_codon,
     # CodonUtils.jl
     get_complement_reversed_codons,
     get_reverse_codon_set,
