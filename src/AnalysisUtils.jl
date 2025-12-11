@@ -217,8 +217,9 @@ function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool =
     shifted_graph_by_2 =
         create_shifted_graph(data, 2, show_plot = show_plot, show_debug = show_debug)
 
-    # check if both shifted graphs are circular
-    if is_circular(shifted_graph_by_1, show_debug = show_debug) &&
+    # check if original graph and both shifted graphs are circular
+    if is_circular(data.graph, show_debug = show_debug) &&
+       is_circular(shifted_graph_by_1, show_debug = show_debug) &&
        is_circular(shifted_graph_by_2, show_debug = show_debug)
         println("Shifted graphs α₁(X) and α₂ are circular -> codon set is C3")
         return true
