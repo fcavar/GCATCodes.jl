@@ -1,23 +1,13 @@
-# line length
-margin = 100
 
-
-# indent
-indent = 4
-
-
-# blank line
-format_docstrings = true
-
-
-# break funtion parameters when they are too long
-always_for_in = true
-join_lines_based_on_source = false
-
-
-# format dicts
-whitespace_typedefs = true
-
-
-# order for using/import
-align_matrix = false
+align_assignment = true          # align assignments
+align_conditional = true         # align conditionals
+align_matrix = true              # align matrices
+align_pair_arrow = true          # align pair arrows
+align_struct_field = true        # align struct fields
+always_for_in = true             # "for x in y" instead of "for x = y"
+format_docstrings = true         # formats docstrings
+indent = 4                       # indentation level
+margin = 100                     # maximal line length
+whitespace_in_kwargs = true      # f(a = b) instead of f(a=b)
+whitespace_ops_in_indices = true # [a + b] instead of [a+b]
+whitespace_typedefs = true       # struct A <: B instead of struct A<:B

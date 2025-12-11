@@ -110,16 +110,14 @@ function is_self_complementary(
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
-        Graphs are identical -> original codon set is self-complementary
-        """)
+        Graphs are identical -> original codon set is self-complementary""")
         return true
     else
         println("""Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
-        Graphs are not identical -> original codon set is not self-complementary
-        """)
+        Graphs are not identical -> original codon set is not self-complementary""")
         return false
     end
 end
@@ -132,11 +130,9 @@ function is_graphs_identical(
     show_debug::Bool = false,
 )
     # check if same amount of vertices and edges
-    show_debug && @debug """
-    Comparing graphs...
+    show_debug && @debug """Comparing graphs...
     Graph 1: nv=$(nv(data_first.graph)), ne=$(ne(data_first.graph))
-    Graph 2: nv=$(nv(data_second.graph)), ne=$(ne(data_second.graph))
-    """
+    Graph 2: nv=$(nv(data_second.graph)), ne=$(ne(data_second.graph))"""
     if nv(data_first.graph) != nv(data_second.graph)
         show_debug && @debug "Not the same amount of vertices"
         return false
@@ -149,10 +145,8 @@ function is_graphs_identical(
     # check if same vertice labels
     show_debug && @debug "Comparing vertice labels..."
     for index in 1:nv(data_first.graph)
-        show_debug && @debug """
-        In Graph 1: vertice $(index): $(data_first.vertice_labels[index])
-               In Graph 2: vertice $(index): $(data_second.vertice_labels[index])
-        """
+        show_debug && @debug """In Graph 1: vertice $(index): $(data_first.vertice_labels[index])
+        In Graph 2: vertice $(index): $(data_second.vertice_labels[index])"""
         if !has_vertice_label(
             data_second,
             data_first.vertice_labels[index],
@@ -211,20 +205,24 @@ end
 
 # check if a set of codons is C3 by checking if the two shifted graphs α₁(X) and α₂ are circular
 function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false)
+    # show original graph
+    if show_plot
+        show_graph(data, show_debug = show_debug)
+    end
     # create shifted graph
-    shifted_graph_by_1 =
+    shifted_data_by_1 =
         create_shifted_graph(data, 1, show_plot = show_plot, show_debug = show_debug)
-    shifted_graph_by_2 =
+    shifted_data_by_2 =
         create_shifted_graph(data, 2, show_plot = show_plot, show_debug = show_debug)
 
     # check if original graph and both shifted graphs are circular
-    if is_circular(data.graph, show_debug = show_debug) &&
-       is_circular(shifted_graph_by_1, show_debug = show_debug) &&
-       is_circular(shifted_graph_by_2, show_debug = show_debug)
-        println("Shifted graphs α₁(X) and α₂ are circular -> codon set is C3")
+    if is_circular(data, show_debug = show_debug) &&
+       is_circular(shifted_data_by_1, show_debug = show_debug) &&
+       is_circular(shifted_data_by_2, show_debug = show_debug)
+        println("G(X), α₁(X) and α₂ are circular -> codon set is C3")
         return true
     else
-        println("One or both of the shifted graphs α₁ or α₂ is not circular -> codon set is not C3")
+        println("G(X), α₁(X) or α₂(X) is not circular -> codon set is not C3")
         return false
     end
 end
@@ -263,11 +261,9 @@ function left_shift_codon(codon::String, shift_by::Int; show_debug::Bool = false
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon))
     # cut of first shift_by characters and append them to the end
-    shifted_codon = codon[shift_by+1:end] * codon[1:shift_by]
-    show_debug && @debug """
-    Original codon set: $codon
-    -> shifted codon set by $shift_by: $shifted_codon
-    """
+    shifted_codon = codon[(shift_by + 1):end] * codon[1:shift_by]
+    show_debug && @debug """Original codon set: $codon
+    -> shifted codon set by $shift_by: $shifted_codon"""
 
     return shifted_codon
 end
@@ -321,6 +317,7 @@ function add_edge_by_label!(
     end
 end
 
+
 # connect one edge label to another
 function connect_edge_by_label!(
     data::CodonGraphData,
@@ -333,3 +330,30 @@ function connect_edge_by_label!(
     to_index = data.vertice_index[to_label]
     add_edge!(data.graph, from_index, to_index)
 end
+
+
+# show all cycles in the graph
+function display_cycles(data::CodonGraphData; show_debug::Bool = false)
+    cycles = simplecycles(data.graph)
+    for cycle in cycles # iterate all cycles
+        # join every vertice label in the cycle with " -> " and print it
+        println(join((data.vertice_labels[i] for i in (cycle..., first(cycle))), " -> "))
+        println("Cycle length: $(length(cycle))")
+    end
+    println("Amount of cycles found: $(length(cycles))")
+end
+
+
+
+
+# example
+example_codon_set = ["CGT", "GTA", "ACT", "AAT", "ATT", "TTA", "TTC"]
+example_data = CodonGraphData(
+    Graphs.SimpleDiGraph(0),
+    example_codon_set,
+    Vector{String}(),
+    Vector{Tuple{String, String}}(),
+    Dict{String, Int}(),
+)
+construct_graph!(example_data; show_plot = true, show_debug = false)
+display_cycles(example_data; show_debug = true)

@@ -47,25 +47,62 @@ data = CodonGraphData(
     Dict{String, Int}(),
 )
 construct_graph!(data; show_plot = true, show_debug = false)
+# check properties of graph
 is_circular(data, show_debug = false)
 is_comma_free(data, show_debug = false)
 is_self_complementary(data, show_plot = false, show_debug = false)
 is_c3(data, show_plot = false, show_debug = false)
-# "Displaying cycles in graph:", display_cycles(data)
-add_vertice_by_label!(data, "C", show_debug = true)
-add_vertice_by_label!(data, "TA", show_debug = true)
-add_edge_by_label!(data, "T", "AC", show_debug = true)
-show_graph(data, show_debug = false)
-add_edge_by_label!(data, "AT", "A", show_debug = true)
-show_graph(data, show_debug = false)
-add_edge_by_label!(data, "A", "TA", show_debug = true)
-show_graph(data, show_debug = false)
-add_edge_by_label!(data, "TA", "C", show_debug = true)
-show_graph(data, show_debug = false)
-is_circular(data, show_debug = false)
-is_comma_free(data, show_debug = false)
-is_self_complementary(data, show_plot = false, show_debug = false)
-is_c3(data, show_plot = false, show_debug = false)
+
+
+
+# manually add vertices and edges to data_adjusted
+data_adjusted = CodonGraphData(
+    Graphs.SimpleDiGraph(0),
+    # codon_x0,
+    example_codon_set,
+    Vector{String}(),
+    Vector{Tuple{String, String}}(),
+    Dict{String, Int}(),
+)
+construct_graph!(data_adjusted; show_plot = true, show_debug = false)
+
+# get get N₂ and N₃N₁ for each codon and add them as vertices and edges between them
+println("data_adjusted.codon_set: $(data.codon_set)")
+for codon in data_adjusted.codon_set
+    n2 = codon[2:2]
+    n3n1 = string(codon[3], codon[1])
+    println("n2: $n2, n3n1: $n3n1")
+    add_vertice_by_label!(data_adjusted, n2, show_debug = false)
+    add_vertice_by_label!(data_adjusted, n3n1, show_debug = false)
+    connect_edge_by_label!(data_adjusted, n2, n3n1, show_debug = false)
+end
+show_graph(data_adjusted; show_debug = false)
+
+# check properties of adjusted graph
+is_circular(data_adjusted, show_debug = false)
+is_comma_free(data_adjusted, show_debug = false)
+is_self_complementary(data_adjusted, show_plot = false, show_debug = false)
+is_c3(data_adjusted, show_plot = false, show_debug = false)
+
+
+
+println(data.codon_set)
+println(data_adjusted.codon_set)
+println(data.vertice_labels)
+println(data_adjusted.vertice_labels)
+println("Edges in data")
+for edge in edges(data.graph)
+    print("$(data.vertice_labels[src(edge)]) -> $(data.vertice_labels[dst(edge)]), ")
+end
+println("Edges in data.adjusted")
+for edge in edges(data_adjusted.graph)
+    print(
+        "$(data_adjusted.vertice_labels[src(edge)]) -> $(data_adjusted.vertice_labels[dst(edge)]), ",
+    )
+end
+
+
+
 
 
 
@@ -146,3 +183,6 @@ open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
         end
     end
 end
+
+a = 1
+longname = 2
