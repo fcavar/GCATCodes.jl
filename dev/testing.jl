@@ -184,5 +184,15 @@ open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
     end
 end
 
-a = 1
-longname = 2
+
+# example for cycle detection
+example_codon_set = ["CGT", "GTA", "ACT", "AAT", "ATT", "TTA", "TTC"]
+example_data = CodonGraphData(
+    Graphs.SimpleDiGraph(0),
+    example_codon_set,
+    Vector{String}(),
+    Vector{Tuple{String, String}}(),
+    Dict{String, Int}(),
+)
+construct_graph!(example_data; show_plot = true, show_debug = false)
+display_cycles(example_data; show_debug = true)

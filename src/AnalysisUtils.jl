@@ -342,18 +342,3 @@ function display_cycles(data::CodonGraphData; show_debug::Bool = false)
     end
     println("Amount of cycles found: $(length(cycles))")
 end
-
-
-
-
-# example
-example_codon_set = ["CGT", "GTA", "ACT", "AAT", "ATT", "TTA", "TTC"]
-example_data = CodonGraphData(
-    Graphs.SimpleDiGraph(0),
-    example_codon_set,
-    Vector{String}(),
-    Vector{Tuple{String, String}}(),
-    Dict{String, Int}(),
-)
-construct_graph!(example_data; show_plot = true, show_debug = false)
-display_cycles(example_data; show_debug = true)
