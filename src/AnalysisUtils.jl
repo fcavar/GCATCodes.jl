@@ -99,9 +99,11 @@ function is_self_complementary(
     data_complemented_reversed = CodonGraphData(
         Graphs.SimpleDiGraph(0), # graph
         codon_set_complemented_reversed, # codon_set
-        Vector{String}(), # vertice_labels
-        Vector{String}(), # added_vertice_labels
-        Vector{Tuple{String, String}}(), # edge_labels
+        Vector{String}(), # all_vertex_labels
+        Vector{String}(), # base_vertex_labels
+        Vector{String}(), # added_vertex_labels
+        Vector{Tuple{String, String}}(), # all_edge_labels
+        Vector{Tuple{String, String}}(), # base_edge_labels
         Vector{Tuple{String, String}}(), # added_edge_labels
         Dict{String, Int}(), # vertice_index
     )
@@ -146,15 +148,16 @@ function is_graphs_identical(
     # check if same vertice labels
     show_debug && @debug "Comparing vertice labels..."
     for index in 1:nv(data_first.graph)
-        show_debug && @debug """In Graph 1: vertice $(index): $(data_first.vertice_labels[index])
-        In Graph 2: vertice $(index): $(data_second.vertice_labels[index])"""
+        show_debug &&
+            @debug """In Graph 1: vertice $(index): $(data_first.original_vertice_labels[index])
+In Graph 2: vertice $(index): $(data_second.original_vertice_labels[index])"""
         if !has_vertice_label(
             data_second,
-            data_first.vertice_labels[index],
+            data_first.original_vertice_labels[index],
             show_debug = show_debug,
         )
             show_debug &&
-                @debug "vertice label $(data_first.vertice_labels[index]) NOT found in Graph 2"
+                @debug "vertice label $(data_first.original_vertice_labels[index]) NOT found in Graph 2"
             return false
         end
     end
@@ -162,16 +165,16 @@ function is_graphs_identical(
     # check if same edges
     show_debug && @debug "Comparing edges..."
     for edge in edges(data_first.graph)
-        src_label = data_first.vertice_labels[src(edge)]
-        dst_label = data_first.vertice_labels[dst(edge)]
+        src_label = data_first.original_vertice_labels[src(edge)]
+        dst_label = data_first.original_vertice_labels[dst(edge)]
         show_debug &&
-            @debug "Edge: $(data_first.vertice_labels[src(edge)]) -> $(data_first.vertice_labels[dst(edge)])"
+            @debug "Edge: $(data_first.original_vertice_labels[src(edge)]) -> $(data_first.original_vertice_labels[dst(edge)])"
         if has_edge_label(data_second, src_label, dst_label; show_debug = show_debug)
             show_debug &&
-                @debug "Edge: $(data_first.vertice_labels[src(edge)]) -> $(data_first.vertice_labels[dst(edge)]) also in Graph 2"
+                @debug "Edge: $(data_first.original_vertice_labels[src(edge)]) -> $(data_first.original_vertice_labels[dst(edge)]) also in Graph 2"
         else
             show_debug &&
-                @debug "Edge: $(data_first.vertice_labels[src(edge)]) -> $(data_first.vertice_labels[dst(edge)]) NOT in Graph 2"
+                @debug "Edge: $(data_first.original_vertice_labels[src(edge)]) -> $(data_first.original_vertice_labels[dst(edge)]) NOT in Graph 2"
             return false # edge not found
         end
     end
@@ -188,11 +191,11 @@ function has_edge_label(
     show_debug::Bool = false,
 )
     # check if labels exist
-    haskey(data.vertice_index, src_label) || return false
-    haskey(data.vertice_index, dst_label) || return false
+    haskey(data.vertex_index, src_label) || return false
+    haskey(data.vertex_index, dst_label) || return false
 
-    from_index = data.vertice_index[src_label]
-    to_index = data.vertice_index[dst_label]
+    from_index = data.vertex_index[src_label]
+    to_index = data.vertex_index[dst_label]
 
     return has_edge(data.graph, from_index, to_index)
 end
@@ -200,7 +203,7 @@ end
 
 # check if a vertice labels exists in the graph
 function has_vertice_label(data::CodonGraphData, label::String; show_debug::Bool = false)
-    return haskey(data.vertice_index, label)
+    return haskey(data.vertex_index, label)
 end
 
 
@@ -247,9 +250,11 @@ function create_shifted_graph(
     shifted_data = CodonGraphData(
         Graphs.SimpleDiGraph(0), # graph
         shifted_codon_set, # codon_set
-        Vector{String}(), # vertice_labels
-        Vector{String}(), # added_vertice_labels
-        Vector{Tuple{String, String}}(), # edge_labels
+        Vector{String}(), # all_vertex_labels
+        Vector{String}(), # base_vertex_labels
+        Vector{String}(), # added_vertex_labels
+        Vector{Tuple{String, String}}(), # all_edge_labels
+        Vector{Tuple{String, String}}(), # base_edge_labels
         Vector{Tuple{String, String}}(), # added_edge_labels
         Dict{String, Int}(), # vertice_index
     )
@@ -289,14 +294,14 @@ end
 
 # function to add a new vertice to a graph data structure
 function add_vertice_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false)
-    if label in data.vertice_labels # vertice already exists
+    if label in data.original_vertice_labels # vertice already exists
         show_debug && @debug "Vertice $label already exists in graph -> not added."
         return false
     else # vertice does not already exist
         # update affected data fields
         add_vertex!(data.graph) # add vertice to graph
         push!(data.added_vertice_labels, label) # add to manually added vertice labels
-        data.vertice_index[label] = nv(data.graph) # map label to vertice index
+        data.vertex_index[label] = nv(data.graph) # map label to vertice index
         show_debug && @debug "Added vertice: $label"
         return true
     end
@@ -330,8 +335,8 @@ function connect_edge_by_label!(
     show_debug::Bool = false,
 )
     # get needed vertice IDs
-    from_index = data.vertice_index[from_label]
-    to_index = data.vertice_index[to_label]
+    from_index = data.vertex_index[from_label]
+    to_index = data.vertex_index[to_label]
     add_edge!(data.graph, from_index, to_index)
 end
 
@@ -339,9 +344,24 @@ end
 # show all cycles in the graph
 function display_cycles(data::CodonGraphData; show_debug::Bool = false)
     cycles = simplecycles(data.graph)
+    show_debug && @debug """Found $(length(cycles)) cycles in graph.
+    Cycles: $cycles"""
+
+    # check for duplicates
+    keys = map(Tuple, cycles)
+    unique_keys = unique(keys)
+    show_debug && @debug """Unique cycles: $unique_keys
+    Total cycles: $keys"""
+    if length(keys) != length(unique_keys)
+        show_debug && @debug "Duplicate cycles found!"
+        return false
+    end
+
+    # iterate all cycles and print them
     for cycle in cycles # iterate all cycles
+        # get all vertice labels 
         # join every vertice label in the cycle with " -> " and print it
-        println(join((data.vertice_labels[i] for i in (cycle..., first(cycle))), " -> "))
+        println(join((data.original_vertice_labels[i] for i in (cycle..., first(cycle))), " -> "))
         println("Cycle length: $(length(cycle))")
     end
     println("Amount of cycles found: $(length(cycles))")

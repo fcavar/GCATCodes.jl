@@ -23,8 +23,8 @@ function show_graph(data::CodonGraphData; show_debug::Bool = false)
     hidespines!(ax) # remove axis spines
     ax.title = "Graph for codon set: $(data.codon_set)"
     # combine vertice labels with manually added vertice labels
-    combine_vertice_labels = vcat(data.vertice_labels, data.added_vertice_labels)
-    show_debug && @debug "vertice_labels in graph: $(data.vertice_labels)"
+    combine_vertice_labels = vcat(data.original_vertice_labels, data.added_vertice_labels)
+    show_debug && @debug "vertice_labels in graph: $(data.original_vertice_labels)"
     graphplot!(
         ax,
         data.graph;

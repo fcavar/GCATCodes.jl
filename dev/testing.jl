@@ -41,9 +41,11 @@ data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     codon_x0, # codon_set
     # example_codon_set, # codon_set
-    Vector{String}(), # vertice_labels
-    Vector{String}(), # added_vertice_labels
-    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
@@ -56,14 +58,15 @@ is_self_complementary(data, show_plot = false, show_debug = false)
 is_c3(data, show_plot = false, show_debug = false)
 
 
-
 # manually add vertices and edges to data_adjusted
 data_adjusted = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     example_codon_set, # codon_set
-    Vector{String}(), # vertice_labels
-    Vector{String}(), # added_vertice_labels
-    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
@@ -125,9 +128,11 @@ println(codon_x0_self_complementary_sorted)
 data_self_complementary = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     codon_x0_self_complementary, # codon_set
-    Vector{String}(), # vertice_labels
-    Vector{String}(), # added_vertice_labels
-    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
@@ -167,15 +172,19 @@ end
 
 # read file per line with all 216 maximal self-complementary C3 codon_set
 open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
-    for (i, line) in enumerate(eachline(f))
+    for (row, codon_line) in enumerate(eachline(f))
         test_data = CodonGraphData(
-            Graphs.SimpleDiGraph(0),
-            split(line),
-            Vector{String}(),
-            Vector{Tuple{String, String}}(),
-            Dict{String, Int}(),
+            Graphs.SimpleDiGraph(0), # graph
+            split(codon_line), # codon_set
+            Vector{String}(), # all_vertex_labels
+            Vector{String}(), # base_vertex_labels
+            Vector{String}(), # added_vertex_labels
+            Vector{Tuple{String, String}}(), # all_edge_labels
+            Vector{Tuple{String, String}}(), # base_edge_labels
+            Vector{Tuple{String, String}}(), # added_edge_labels
+            Dict{String, Int}(), # vertice_index
         )
-        println("""Testing codon set #$i:
+        println("""Testing codon set #$row:
         $(test_data.codon_set)
         """)
         construct_graph!(test_data, show_plot = false, show_debug = false)
@@ -183,7 +192,7 @@ open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
         is_comma_free(test_data, show_debug = false)
         is_self_complementary(test_data, show_plot = false, show_debug = false)
         is_c3(test_data, show_plot = false, show_debug = false)
-        if i == 1
+        if row == 1
             break
         end
     end
@@ -196,9 +205,11 @@ example_codon_set = ["CGT", "GTA", "ACT", "AAT"]
 example_data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     example_codon_set, # codon_set
-    Vector{String}(), # vertice_labels
-    Vector{String}(), # added_vertice_labels
-    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
@@ -206,9 +217,11 @@ example_data = CodonGraphData(
 reverse_data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     get_reverse_codon_set(example_codon_set), # codon_set
-    Vector{String}(), # vertice_labels
-    Vector{String}(), # added_vertice_labels
-    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
@@ -216,9 +229,11 @@ reverse_data = CodonGraphData(
 alpha_1_data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     left_shift_codon_set(example_codon_set, 1; show_debug = false), # codon_set
-    Vector{String}(), # vertice_labels
-    Vector{String}(), # added_vertice_labels
-    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
@@ -226,9 +241,11 @@ alpha_1_data = CodonGraphData(
 alpha_2_data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     left_shift_codon_set(example_codon_set, 2; show_debug = false), # codon_set
-    Vector{String}(), # vertice_labels
-    Vector{String}(), # added_vertice_labels
-    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
@@ -236,9 +253,11 @@ alpha_2_data = CodonGraphData(
 manually_adjusted_data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
     example_codon_set, # codon_set
-    Vector{String}(), # vertice_labels
-    Vector{String}(), # added_vertice_labels
-    Vector{Tuple{String, String}}(), # edge_labels
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
 )
@@ -250,14 +269,14 @@ construct_graph!(alpha_2_data; show_plot = true, show_debug = false)
 construct_graph!(manually_adjusted_data; show_plot = true, show_debug = false)
 
 # get N₂ and N₃N₁ for each codon and add them as vertices and edges between them
-for codon in manually_adjusted_data.codon_set
+for codon in data.codon_set
     n2 = codon[2:2]
     n3n1 = string(codon[3], codon[1])
     println("n2: $n2, n3n1: $n3n1")
-    add_vertice_by_label!(manually_adjusted_data, n2, show_debug = true)
-    add_vertice_by_label!(manually_adjusted_data, n3n1, show_debug = true)
-    add_edge_by_label!(manually_adjusted_data, n2, n3n1, show_debug = true)
-    add_edge_by_label!(manually_adjusted_data, n3n1, n2, show_debug = true)
+    add_vertice_by_label!(data, n2, show_debug = true)
+    add_vertice_by_label!(data, n3n1, show_debug = true)
+    add_edge_by_label!(data, n2, n3n1, show_debug = true)
+    add_edge_by_label!(data, n3n1, n2, show_debug = true)
 end
 show_graph(manually_adjusted_data; show_debug = false)
 
@@ -301,10 +320,32 @@ end
 
 
 for name in fieldnames(typeof(manually_adjusted_data))
-    println("$name => $(getfield(example_data, name))\n")
+    println("$name => $(getfield(manually_adjusted_data, name))\n")
 end
 
-#vertice_labels => ["A", "C", "G", "T", "AA", "AC", "AT", "CG", "CT", "GT", "TA"]
-#vertice_labels => ["A", "C", "G", "T", "AA", "AC", "AT", "CG", "CT", "GT", "TA"]
-#edge_labels => [("C", "GT"), ("CG", "T"), ("G", "TA"), ("GT", "A"), ("A", "CT"), ("AC", "T"), ("A", "AT"), ("AA", "T")]
-#edge_labels => [("C", "GT"), ("CG", "T"), ("G", "TA"), ("GT", "A"), ("A", "CT"), ("AC", "T"), ("A", "AT"), ("AA", "T")]
+
+# merge two codon graphs
+function merge_codon_graphs(
+    data1::CodonGraphData,
+    data2::CodonGraphData;
+    show_debug::Bool = false,
+)::CodonGraphData
+    merged_data = CodonGraphData(
+        Graphs.SimpleDiGraph(0), # graph
+        union(data1.codon_set, data2.codon_set), # codon_set
+        Vector{String}(), # all_vertex_labels
+        Vector{String}(), # base_vertex_labels
+        Vector{String}(), # added_vertex_labels
+        Vector{Tuple{String, String}}(), # all_edge_labels
+        Vector{Tuple{String, String}}(), # base_edge_labels
+        Vector{Tuple{String, String}}(), # added_edge_labels
+        Dict{String, Int}(), # vertice_index
+    )
+    return merged_data
+end
+merged_data = merge_codon_graphs(alpha_1_data, alpha_2_data; show_debug = false)
+construct_graph!(merged_data; show_plot = true, show_debug = false)
+
+show_graph(data; show_debug = false)
+display_cycles(merged_data, show_debug = true)
+display_cycles(data, show_debug = true)

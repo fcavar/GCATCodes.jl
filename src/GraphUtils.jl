@@ -14,15 +14,15 @@ function construct_graph!(data::CodonGraphData; show_plot::Bool = false, show_de
         Before adding vertices and edges:
         graph: $(data.graph)
         codon_set: $(data.codon_set)
-        vertice_labels: $(data.vertice_labels)
+        vertice_labels: $(data.original_vertice_labels)
         edge_labels: $(data.edge_labels)
         """
 
         # extract vertice labels from codon set and add vertices to graph
         create_all_vertices!(data)
         # create mapping from vertice label to vertice index in graph
-        data.vertice_index =
-            Dict(label => index for (index, label) in enumerate(data.vertice_labels))
+        data.vertex_index =
+            Dict(label => index for (index, label) in enumerate(data.original_vertice_labels))
         # connect edges
         connect_edges!(data)
 
@@ -30,7 +30,7 @@ function construct_graph!(data::CodonGraphData; show_plot::Bool = false, show_de
         After adding vertices and edges:
         graph: $(data.graph)
         codon_set: $(data.codon_set)
-        vertice_labels: $(data.vertice_labels)
+        vertice_labels: $(data.original_vertice_labels)
         edge_labels: $(data.edge_labels)
         """
     end
@@ -56,15 +56,14 @@ function create_all_vertices!(data::CodonGraphData; show_debug::Bool = false)
         push!(temp_labels, codon[2:3]) # second tuple
     end
 
-    # # add manually added vertice labels
-    # for label in data.added_vertice_labels
-    #     push!(temp_labels, label)
-    # end
+    # sort and copy temp_labels to all_vertex_labels and base_vertex_labels fields
+    labels = collect(temp_labels)
+    sort!(labels, by = x -> (length(x), x))
+    data.all_vertex_labels = labels
+    data.base_vertex_labels = copy(labels)
 
-    # copy set to vertice_labels
-    data.vertice_labels = sort(collect(temp_labels), by = x -> (length(x), x))
     # add vertices to graph
-    for _ in 1:length(data.vertice_labels)
+    for _ in 1:length(data.all_vertex_labels)
         add_vertex!(data.graph)
     end
 end
@@ -74,29 +73,36 @@ end
 # the first tuple to the third base
 function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
     graph = data.graph
-    vertice_index = data.vertice_index
-    vertice_labels = data.vertice_labels
+    all_vertex_index = data.all_vertex_index
+    all_vertice_labels = data.all_vertice_labels
+    base_edge_labels = data.base_edge_labels
     edge_labels = data.edge_labels
 
     # iterate through codon set and add edges to graph
     for codon in data.codon_set
         # get needed vertice IDs
-        first_base_id = vertice_index[SubString(codon, 1, 1)]
-        third_base_id = vertice_index[SubString(codon, 3, 3)]
-        first_tuple_id = vertice_index[SubString(codon, 1, 2)]
-        second_tuple_id = vertice_index[SubString(codon, 2, 3)]
+        first_base_id = all_vertex_index[SubString(codon, 1, 1)]
+        third_base_id = all_vertex_index[SubString(codon, 3, 3)]
+        first_tuple_id = all_vertex_index[SubString(codon, 1, 2)]
+        second_tuple_id = all_vertex_index[SubString(codon, 2, 3)]
+
+        # add edge_labels to all_edge_labels and base_edge_labels fields
+        push!(
+            all_vertice_labels,
+            (all_vertice_labels[first_base_id], vertice_labels[second_tuple_id]),
+        )
+        push!(
+            all_vertice_labels,
+            (all_vertice_labels[first_tuple_id], vertice_labels[third_base_id]),
+        )
+        push!(
+            base_edge_labels,
+            (all_vertice_labels[first_base_id], vertice_labels[second_tuple_id]),
+        )
+        push!(base_edge_labels, (all_vertice_labels[first_tuple_id], vertice_labels[third_base_id]))
 
         # add edges to graph
         add_edge!(graph, first_base_id, second_tuple_id)
         add_edge!(graph, first_tuple_id, third_base_id)
-
-        # update edge_labels field
-        push!(edge_labels, (vertice_labels[first_base_id], vertice_labels[second_tuple_id]))
-        push!(edge_labels, (vertice_labels[first_tuple_id], vertice_labels[third_base_id]))
     end
-
-    # # add manually added edge labels
-    # for edge_label in data.added_edge_labels
-    #     add_edge!(graph, vertice_index[edge_label[1]], vertice_index[edge_label[2]])
-    # end
 end
